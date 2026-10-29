@@ -9,6 +9,30 @@ env:
   IMAGE_NAME: secure-jwt-app
 
 jobs:
+  # TODO: add test setup here
+  build-app:
+    name: Build app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repositoryex
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Build JAR artifact
+        run: mvn clean package -DskipTests
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar
+
+  # TODO: make dependent on build-app run
   build-and-push:
     runs-on: ubuntu-latest
 
