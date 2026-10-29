@@ -35,8 +35,8 @@ jobs:
           name: app-jar
           path: target/*.jar
 
-  # TODO: make dependent on build-app run
-  build-and-push:
+  build-docker:
+    needs: build-app
     name: Build docker image
     runs-on: ubuntu-latest
 
@@ -57,3 +57,7 @@ jobs:
       #     registry: ${{ env.REGISTRY }}
       #     username: ${{ github.actor }}
       #     password: ${{ secrets.GHCR_TOKEN }}
+
+      # TODO: add download artifact
+      # TODO: call docker build for image
+      # TODO: add publish to GHCR
