@@ -11,7 +11,7 @@ env:
 jobs:
   # TODO: add test setup here
   build-app:
-    name: Build app
+    name: Build, test, and package app
     runs-on: ubuntu-latest
     defaults:
       run:
