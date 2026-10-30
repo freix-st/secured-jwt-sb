@@ -7,17 +7,14 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
 @Testcontainers 
 class SecuredjwtApplicationTests {
-
-	static DockerImageName mysqlCompatibleImage = DockerImageName.parse("mysql8.0").asCompatibleSubstituteFor("mysql");
 	
 	@SuppressWarnings("resource")
 	@Container
-	static MySQLContainer<?> testDB = new MySQLContainer<>(mysqlCompatibleImage)
+	static MySQLContainer<?> testDB = new MySQLContainer<>("mysql:8.0")
 		.withDatabaseName("test_db")
 		.withUsername("test")
 		.withPassword("test");
