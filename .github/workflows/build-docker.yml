@@ -10,7 +10,7 @@ env:
 
 jobs:
   build-app:
-    name: Build, test, and package app
+    name: Build and Package app
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,7 +22,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: test
-          MYSQL_DATABASE: testdb
+          MYSQL_DATABASE: test_db
           MYSQL_USER: test
           MYSQL_PASSWORD: test
         ports:
@@ -41,7 +41,7 @@ jobs:
       - name: Build JAR artifact
         run: mvn clean package
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/testdb
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/test_db
           SPRING_DATASOURCE_USERNAME: test
           SPRING_DATASOURCE_PASSWORD: test
 
