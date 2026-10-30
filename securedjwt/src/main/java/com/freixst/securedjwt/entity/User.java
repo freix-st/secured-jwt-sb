@@ -1,4 +1,6 @@
 package com.freixst.securedjwt.entity;
+import com.freixst.securedjwt.enums.Role;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -6,11 +8,14 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private String name;
     private String username;
     private String password;
-    private String role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
     public String getName() {
         return this.name;
@@ -24,7 +29,7 @@ public class User {
         return this.password;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return this.role;
     }
 
@@ -40,7 +45,7 @@ public class User {
         this.password = password;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 }
