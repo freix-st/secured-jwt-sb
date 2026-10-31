@@ -39,7 +39,8 @@ jobs:
           java-version: 17
 
       - name: Build JAR artifact
-        run: mvn clean package
+        run: mvn clean package |
+          -Djwt.secret.key=${{ secrets.FRENCH_KEYS }}
         env:
           SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/test_db
           SPRING_DATASOURCE_USERNAME: test
