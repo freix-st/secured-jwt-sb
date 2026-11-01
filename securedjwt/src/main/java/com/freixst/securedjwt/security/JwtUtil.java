@@ -5,6 +5,7 @@ import java.util.Date;
 
 import javax.crypto.spec.SecretKeySpec;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 
 public class JwtUtil {
@@ -28,5 +29,17 @@ public class JwtUtil {
             .parseSignedClaims(token)
             .getPayload()
             .getSubject();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                .verifyWith(SECRET_KEY)
+                .build()
+                .parseSignedClaims(token);
+            return true;
+        } catch (JwtException e) {
+            return false;
+        }
     }
 }
