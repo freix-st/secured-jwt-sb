@@ -13,11 +13,15 @@ import io.jsonwebtoken.Jwts;
 
 @Component 
 public class JwtUtil {
-    @Value("${jwt.secret.key}")
-    private String privateKeyBase64;
-    
-    private byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);
-    private final SecretKeySpec SECRET_KEY = new SecretKeySpec(privateKeyBytes, "HmacSHA256");
+    private final SecretKeySpec SECRET_KEY;
+
+    public JwtUtil(
+        @Value("${jwt.secret.key}")
+        String privateKeyBase64) {
+        
+        byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);
+        this.SECRET_KEY = new SecretKeySpec(privateKeyBytes, "HmacSHA256");
+    }
 
     public String generateToken(String username) {
         return Jwts.builder()
