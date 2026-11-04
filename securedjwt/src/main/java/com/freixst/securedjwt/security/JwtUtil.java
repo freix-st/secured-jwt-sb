@@ -13,7 +13,7 @@ import io.jsonwebtoken.Jwts;
 
 @Component 
 public class JwtUtil {
-    @Value("$jwt.secret.key")
+    @Value("${jwt.secret.key}")
     private String privateKeyBase64;
     
     private byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);
