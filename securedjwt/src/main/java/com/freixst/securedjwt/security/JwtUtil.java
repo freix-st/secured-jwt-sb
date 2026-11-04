@@ -5,11 +5,15 @@ import java.util.Date;
 
 import javax.crypto.spec.SecretKeySpec;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 
 public class JwtUtil {
-    private String privateKeyBase64 = System.getProperty("jwt.secret.key");
+    @Value("$jwt.secret.key")
+    private String privateKeyBase64;
+    
     private byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);
     private final SecretKeySpec SECRET_KEY = new SecretKeySpec(privateKeyBytes, "HmacSHA256");
 
