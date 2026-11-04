@@ -1,4 +1,5 @@
 # secured-jwt-sb
+This repo is an implementation of JWT in Spring Boot.
 
 ## Secrets
 - FRENCH_KEYS
