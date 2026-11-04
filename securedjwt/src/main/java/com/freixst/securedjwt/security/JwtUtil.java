@@ -6,10 +6,12 @@ import java.util.Date;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 
+@Component 
 public class JwtUtil {
     @Value("$jwt.secret.key")
     private String privateKeyBase64;
