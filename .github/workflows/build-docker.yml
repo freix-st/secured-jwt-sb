@@ -29,7 +29,7 @@ jobs:
           - 3306:3306
 
     steps:
-      - name: Checkout repositoryex
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -50,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-jar
-          path: target/*.jar
+          path: ./securedjwt/target/*.jar
 
   build-docker:
     needs: build-app
@@ -79,7 +79,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-jar
-          path: securedjwt/target/
+          path: ./securedjwt/target/
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
