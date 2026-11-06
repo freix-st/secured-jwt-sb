@@ -87,7 +87,7 @@ jobs:
           context: ./securedjwt
           file: ./securedjwt/Dockerfile
           # push: true
-          push: false
+          push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
