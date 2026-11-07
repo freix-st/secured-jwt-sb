@@ -1,0 +1,111 @@
+name: Build image and push to GHCR
+
+# TODO: Implement hotfix/
+on:
+  push:
+    branches: 
+      - hotfix/*
+      - release/*
+      - develop
+      - feature/*
+    tags:
+      - 'v*.*.*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-app:
+    name: Build and Package app
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./securedjwt
+
+    # Setup temporary DB for build
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+        ports:
+          - 3306:3306
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Build JAR artifact
+        env:
+          JWT_SECRET_KEY: ${{ secrets.FRENCH_KEYS }}
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/test_db
+          SPRING_DATASOURCE_USERNAME: test
+          SPRING_DATASOURCE_PASSWORD: test
+        run: mvn clean package
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-jar
+          path: ./securedjwt/target/*.jar
+
+  build-docker:
+    needs: build-app
+    name: Build docker image
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup docker buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: app-jar
+          path: ./securedjwt/target/
+
+      - name: Push condition
+        id: push-condition
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]] || \
+             [[ "${{ github.ref }}" =~ ^refs/heads/feature/ ]]; then
+            echo "PUSH_IMAGE=false" >> $GITHUB_OUTPUT
+          else
+            echo "PUSH_IMAGE=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./securedjwt
+          file: ./securedjwt/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
