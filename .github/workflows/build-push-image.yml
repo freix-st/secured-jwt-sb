@@ -103,7 +103,7 @@ jobs:
         with:
           context: ./securedjwt
           file: ./securedjwt/Dockerfile
-          push: true
+          push: ${{ steps.push-condition.outputs.PUSH_IMAGE }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:${{ github.sha }}
