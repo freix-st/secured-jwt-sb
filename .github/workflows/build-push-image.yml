@@ -1,6 +1,5 @@
 name: Build image and push to GHCR
 
-# TODO: Implement hotfix/
 on:
   push:
     branches: 
@@ -88,6 +87,22 @@ jobs:
           name: app-jar
           path: ./securedjwt/target/
 
+      - name: Extract docker metadata
+        id: docker-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          tags: |
+            # PROD
+            type=semver, pattern={{version}}, enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw, value=latest, enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+            # STAGING
+            type=match, pattern=release/v(\d+\.\d+\.\d+), value={{match[1]}}-rc
+
+            # ALL
+            type=sha, format=short
+
       - name: Push condition
         id: push-condition
         run: |
@@ -98,14 +113,12 @@ jobs:
             echo "PUSH_IMAGE=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build and push Docker image
+      - name: Build and push docker
         uses: docker/build-push-action@v7
         with:
           context: ./securedjwt
           file: ./securedjwt/Dockerfile
           push: ${{ steps.push-condition.outputs.PUSH_IMAGE }}
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:${{ github.sha }}
+          tags: ${{ steps.docker-meta.outputs.tags}}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
