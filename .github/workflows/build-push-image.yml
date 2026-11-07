@@ -100,14 +100,19 @@ jobs:
             # STAGING
             type=match, pattern=release/v(\d+\.\d+\.\d+), value={{match[1]}}-rc
 
-            # ALL
-            type=sha, format=short
+            # DEVELOP
+            type=ref, event=branch, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
+
+            # DEVELOP-SHA
+            type=sha, format=short, prefix=dev-, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
+
+            # COMMIT-SHA
+            type=sha, format=short, enable=${{ !startsWith(github.ref, 'refs/heads/develop') }}
 
       - name: Push condition
         id: push-condition
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/develop" ]] || \
-             [[ "${{ github.ref }}" =~ ^refs/heads/feature/ ]]; then
+          if [[ "${{ github.ref }}" =~ ^refs/heads/feature/ ]]; then
             echo "PUSH_IMAGE=false" >> $GITHUB_OUTPUT
           else
             echo "PUSH_IMAGE=true" >> $GITHUB_OUTPUT
