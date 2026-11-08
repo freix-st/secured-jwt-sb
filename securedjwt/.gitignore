@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### SECRET ###
+jwt_secret_key_local.txt
+
 ### STS ###
 .apt_generated
 .classpath
