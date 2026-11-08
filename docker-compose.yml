@@ -15,11 +15,15 @@ services:
 
     secured-jwt-sb:
         image: ghcr.io/freix-st/secured-jwt-sb:latest
+        secrets:
+            - jwt_secret_key
         container_name: secured-jwt-sb
         ports:
             - "8080:8080"
+        env_file:
+            - .env # JWT_SECRET_KEY
         environment:
-            SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/test_db?useSSL=false&serverTimezone=UTC
+            SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/test_db?useSSL=false&allowPublicKeyRetrieval=true&Is serverTimezone=UTC
             SPRING_DATASOURCE_USERNAME: root
             SPRING_DATASOURCE_PASSWORD: password
         depends_on:
