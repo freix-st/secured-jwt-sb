@@ -3,8 +3,8 @@ An implementation of JWT in Spring Boot.
 
 ## Local deployment
 This is meant for local deployment for study of how JWT is used.
-That's why the following decisions were made:
-❌ ECR ✅ GHCR
+That's why the following decisions were made: \
+❌ ECR ✅ GHCR \
 ❌ ECS ✅ Docker compose
 
 ## Secrets
