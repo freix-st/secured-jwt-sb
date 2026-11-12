@@ -9,6 +9,8 @@ That's why the following decisions were made: \
 
 ## Secrets
 - FRENCH_KEYS - Base64 encoded 32 bytes HmacSHA256 private key
+- GHCR_DELETE_ACC - Account to use for deleting old outdated images
+- GHCR_DELETE_TOKEN - Token to use for deleting old outdated images
 
 ## Helper scripts
 - build_dummy_key.sh - For building with maven locally using a dummy key
