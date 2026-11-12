@@ -1,0 +1,26 @@
+name: Cleanup GHCR
+
+on:
+    schedule:
+        - cron: '0 0 15 * *'
+    workflow_dispatch:
+
+jobs:
+    image-cleanup:
+        runs-on: ubuntu-latest
+        permissions:
+            packages: write
+            contents: read
+        steps:
+            - name: Delete old images
+              uses: snok/container-retention-policy@v3.1.0
+              with:
+                account: ${{ secrets.GHCR_DELETE_ACC }}
+                image-names: secured-jwt-db
+                token: ${{ secrets.GHCR_DELETE_TOKEN }}
+                cut-off: 3d
+                dry-run: true
+                image-tags: | 
+                    dev-*
+                    pr-*
+                
