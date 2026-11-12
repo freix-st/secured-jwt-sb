@@ -106,24 +106,24 @@ jobs:
             # DEVELOP-SHA
             type=sha, format=short, prefix=dev-, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
 
-            # COMMIT-SHA
-            type=sha, format=short, enable=${{ !startsWith(github.ref, 'refs/heads/develop') }}
+            # FEATURE-SHA
+            type=template, template={{type}}-{{number}}-{{round(sha)}}, enable=${{
+              startsWith(github.ref, 'refs/heads/feature/') &&
+              github.event_name == 'pull_request'
+            }}
 
-      - name: Push condition
-        id: push-condition
-        run: |
-          if [[ "${{ github.ref }}" =~ ^refs/heads/feature/ ]]; then
-            echo "PUSH_IMAGE=false" >> $GITHUB_OUTPUT
-          else
-            echo "PUSH_IMAGE=true" >> $GITHUB_OUTPUT
-          fi
+            # COMMIT-SHA
+            type=sha, format=short, enable=${{ 
+              !startsWith(github.ref, 'refs/heads/develop') &&
+              !startsWith(github.ref, 'refs/heads/feature/')
+            }}
 
       - name: Build and push docker
         uses: docker/build-push-action@v7
         with:
           context: ./securedjwt
           file: ./securedjwt/Dockerfile
-          push: ${{ steps.push-condition.outputs.PUSH_IMAGE }}
+          push: true
           tags: ${{ steps.docker-meta.outputs.tags}}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
