@@ -62,6 +62,8 @@ jobs:
     needs: build-app
     name: Build docker image
     runs-on: ubuntu-latest
+    env:
+      SHORT_SHA: "unknown"
 
     permissions:
       contents: read
@@ -87,6 +89,11 @@ jobs:
           name: app-jar
           path: ./securedjwt/target/
 
+      - name: Compute short SHA
+        id: vars
+        run: |
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
       - name: Extract docker metadata
         id: docker-meta
         uses: docker/metadata-action@v5
@@ -107,10 +114,7 @@ jobs:
             type=sha, format=short, prefix=dev-, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
 
             # FEATURE-SHA
-            type=template, template={{type}}-{{number}}-{{round(sha)}}, enable=${{
-              startsWith(github.ref, 'refs/heads/feature/') &&
-              github.event_name == 'pull_request'
-            }}
+            type=ref, event=pr, suffix=${{ env.SHORT_SHA }}, enable=${{ startsWith(github.ref, 'refs/heads/feature/') }}
 
             # COMMIT-SHA
             type=sha, format=short, enable=${{ 
