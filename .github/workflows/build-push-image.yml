@@ -125,8 +125,8 @@ jobs:
       - name: Push condition
         id: push-condition
         run: |
-          if [[ "${{ github.head_ref }}" =~ ^feature/ && 
-                "${{ github.event_name }}" != "pull_request"  ]]; then
+          if [[ "${{ github.event_name }}" != "pull_request" &&
+                "${{ github.ref}}" =~ ^refs/heads/feature/ ]]; then
             echo "PUSH_IMAGE=false" >> $GITHUB_OUTPUT
           else
             echo "PUSH_IMAGE=true" >> $GITHUB_OUTPUT
