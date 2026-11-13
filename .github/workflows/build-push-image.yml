@@ -122,12 +122,22 @@ jobs:
               !startsWith(github.ref, 'refs/heads/feature/')
             }}
 
+      - name: Push condition
+        id: push-condition
+        run: |
+          if [[ "${{ github.head_ref }}" =~ ^feature/ && 
+                "${{ github.event_name }}" != "pull_request"  ]]; then
+            echo "PUSH_IMAGE=false" >> $GITHUB_OUTPUT
+          else
+            echo "PUSH_IMAGE=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push docker
         uses: docker/build-push-action@v7
         with:
           context: ./securedjwt
           file: ./securedjwt/Dockerfile
-          push: true
+          push: ${{ steps.push-condition.outputs.PUSH_IMAGE }}
           tags: ${{ steps.docker-meta.outputs.tags}}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
