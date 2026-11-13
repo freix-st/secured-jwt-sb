@@ -62,6 +62,8 @@ jobs:
     needs: build-app
     name: Build docker image
     runs-on: ubuntu-latest
+    env:
+      SHORT_SHA: "unknown"
 
     permissions:
       contents: read
@@ -87,6 +89,11 @@ jobs:
           name: app-jar
           path: ./securedjwt/target/
 
+      - name: Compute short SHA
+        id: vars
+        run: |
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
       - name: Extract docker metadata
         id: docker-meta
         uses: docker/metadata-action@v5
@@ -98,7 +105,7 @@ jobs:
             type=raw, value=latest, enable=${{ startsWith(github.ref, 'refs/tags/v') }}
 
             # STAGING
-            type=match, pattern=release/v(\d+\.\d+\.\d+), value={{match[1]}}-rc
+            type=match, pattern=release/v(\d+\.\d+\.\d+), value={{match[1]}}-rc, enable=${{ startsWith(github.ref, 'refs/heads/release/') }}
 
             # DEVELOP
             type=ref, event=branch, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
@@ -106,13 +113,20 @@ jobs:
             # DEVELOP-SHA
             type=sha, format=short, prefix=dev-, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
 
+            # FEATURE-SHA
+            type=ref, event=pr, suffix=-${{ env.SHORT_SHA }}, enable=${{ startsWith(github.ref, 'refs/heads/feature/') }}
+
             # COMMIT-SHA
-            type=sha, format=short, enable=${{ !startsWith(github.ref, 'refs/heads/develop') }}
+            type=sha, format=short, enable=${{ 
+              !startsWith(github.ref, 'refs/heads/develop') &&
+              !startsWith(github.ref, 'refs/heads/feature/')
+            }}
 
       - name: Push condition
         id: push-condition
         run: |
-          if [[ "${{ github.ref }}" =~ ^refs/heads/feature/ ]]; then
+          if [[ "${{ github.event_name }}" != "pull_request" &&
+                "${{ github.ref}}" =~ ^refs/heads/feature/ ]]; then
             echo "PUSH_IMAGE=false" >> $GITHUB_OUTPUT
           else
             echo "PUSH_IMAGE=true" >> $GITHUB_OUTPUT
