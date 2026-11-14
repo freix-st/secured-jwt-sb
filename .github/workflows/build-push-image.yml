@@ -9,6 +9,10 @@ on:
       - feature/*
     tags:
       - 'v*.*.*'
+  pull_request:
+    types: [opened]
+    branches:
+      - develop
 
 env:
   REGISTRY: ghcr.io
@@ -62,6 +66,9 @@ jobs:
     needs: build-app
     name: Build docker image
     runs-on: ubuntu-latest
+    env:
+      SHORT_SHA: "unknown"
+      RC_VERSION: ""
 
     permissions:
       contents: read
@@ -87,6 +94,21 @@ jobs:
           name: app-jar
           path: ./securedjwt/target/
 
+      - name: Compute short SHA
+        id: vars
+        run: |
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Get RC version
+        id: var-rc-version
+        run: |
+          if [[ ${{ startsWith(github.ref, 'refs/heads/release/') }} ]]; then
+            BRANCH=${{ github.ref_name }}
+            VERSION="${BRANCH#release/}"
+
+            echo "RC_VERSION=${VERSION}" >> $GITHUB_ENV
+          fi
+
       - name: Extract docker metadata
         id: docker-meta
         uses: docker/metadata-action@v5
@@ -98,7 +120,7 @@ jobs:
             type=raw, value=latest, enable=${{ startsWith(github.ref, 'refs/tags/v') }}
 
             # STAGING
-            type=match, pattern=release/v(\d+\.\d+\.\d+), value={{match[1]}}-rc
+            type=raw, value=${{ env.RC_VERSION }}, suffix=-rc, enable=${{ startsWith(github.ref, 'refs/heads/release/') }}
 
             # DEVELOP
             type=ref, event=branch, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
@@ -106,13 +128,26 @@ jobs:
             # DEVELOP-SHA
             type=sha, format=short, prefix=dev-, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
 
+            # FEATURE-SHA
+            type=raw, prefix=pr-, value=${{ env.SHORT_SHA }}, enable=${{ startsWith(github.ref, 'refs/heads/feature/') }}
+            type=ref, event=pr, suffix=-${{ env.SHORT_SHA }}, enable=${{ startsWith(github.event.pull_request.head.ref, 'feature/') }}
+
             # COMMIT-SHA
-            type=sha, format=short, enable=${{ !startsWith(github.ref, 'refs/heads/develop') }}
+            type=sha, format=short, enable=${{ 
+              !startsWith(github.ref, 'refs/heads/develop') &&
+              !startsWith(github.ref, 'refs/heads/feature/')
+            }}
 
       - name: Push condition
         id: push-condition
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [[ "${{ github.ref }}" =~ ^refs/heads/feature/ ]]; then
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          PR_COUNT=$(gh pr list --head "$BRANCH_NAME" --state open --json number --jq 'length')
+
+          if [[ "$BRANCH_NAME" =~ ^feature/ &&
+                "$PR_COUNT" -eq 0 ]]; then
             echo "PUSH_IMAGE=false" >> $GITHUB_OUTPUT
           else
             echo "PUSH_IMAGE=true" >> $GITHUB_OUTPUT
