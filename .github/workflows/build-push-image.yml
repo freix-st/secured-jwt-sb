@@ -64,6 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SHORT_SHA: "unknown"
+      RC_VERSION: ""
 
     permissions:
       contents: read
@@ -94,6 +95,16 @@ jobs:
         run: |
           echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
+      - name: Get RC version
+        id: var-rc-version
+        run: |
+          if [[ ${{ startsWith(github.ref, 'refs/heads/release/') }} ]]; then
+            BRANCH=${{ github.ref_name }}
+            VERSION="${BRANCH#release/}"
+
+            echo "RC_VERSION=${VERSION}" >> $GITHUB_ENV
+          fi
+
       - name: Extract docker metadata
         id: docker-meta
         uses: docker/metadata-action@v5
@@ -105,7 +116,7 @@ jobs:
             type=raw, value=latest, enable=${{ startsWith(github.ref, 'refs/tags/v') }}
 
             # STAGING
-            type=match, pattern=release/v(\d+\.\d+\.\d+), value={{match[1]}}-rc, enable=${{ startsWith(github.ref, 'refs/heads/release/') }}
+            type=raw, value=${{ env.RC_VERSION }}, suffix=-rc, enable=${{ startsWith(github.ref, 'refs/heads/release/') }}
 
             # DEVELOP
             type=ref, event=branch, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
