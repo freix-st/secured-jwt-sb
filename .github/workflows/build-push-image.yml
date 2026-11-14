@@ -129,7 +129,7 @@ jobs:
             type=sha, format=short, prefix=dev-, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
 
             # FEATURE-SHA
-            type=ref, event=pr, suffix=-${{ env.SHORT_SHA }}, enable=${{ startsWith(github.event.pull_request.head.ref, 'refs/heads/feature/') }}
+            type=ref, event=pr, suffix=-${{ env.SHORT_SHA }}, enable=${{ startsWith(github.event.pull_request.head.ref, 'feature/') }}
 
             # COMMIT-SHA
             type=sha, format=short, enable=${{ 
