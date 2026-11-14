@@ -140,6 +140,8 @@ jobs:
 
       - name: Push condition
         id: push-condition
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           PR_COUNT=$(gh pr list --head "$BRANCH_NAME" --state open --json number --jq 'length')
