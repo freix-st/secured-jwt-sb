@@ -116,7 +116,7 @@ jobs:
             type=raw, value=latest, enable=${{ startsWith(github.ref, 'refs/tags/v') }}
 
             # STAGING
-            type=raw, prefix=v, value=${{ env.RC_VERSION }}, suffix=-rc, enable=${{ startsWith(github.ref, 'refs/heads/release/') }}
+            type=raw, value=${{ env.RC_VERSION }}, suffix=-rc, enable=${{ startsWith(github.ref, 'refs/heads/release/') }}
 
             # DEVELOP
             type=ref, event=branch, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
