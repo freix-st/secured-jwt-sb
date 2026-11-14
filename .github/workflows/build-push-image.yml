@@ -129,6 +129,7 @@ jobs:
             type=sha, format=short, prefix=dev-, enable=${{ startsWith(github.ref, 'refs/heads/develop') }}
 
             # FEATURE-SHA
+            type=raw, prefix=pr-, value=${{ env.SHORT_SHA }}, enable=${{ startsWith(github.ref, 'refs/heads/feature/') }}
             type=ref, event=pr, suffix=-${{ env.SHORT_SHA }}, enable=${{ startsWith(github.event.pull_request.head.ref, 'feature/') }}
 
             # COMMIT-SHA
@@ -140,8 +141,11 @@ jobs:
       - name: Push condition
         id: push-condition
         run: |
-          if [[ "${{ github.event_name }}" != "pull_request" &&
-                "${{ github.ref}}" =~ ^refs/heads/feature/ ]]; then
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          PR_COUNT=$(gh pr list --head "$BRANCH_NAME" --state open --json number --jq 'length')
+
+          if [[ "$BRANCH_NAME" =~ ^feature/ &&
+                "$PR_COUNT" -eq 0 ]]; then
             echo "PUSH_IMAGE=false" >> $GITHUB_OUTPUT
           else
             echo "PUSH_IMAGE=true" >> $GITHUB_OUTPUT
