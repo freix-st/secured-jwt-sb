@@ -15,8 +15,6 @@ services:
 
     secured-jwt-sb:
         image: ghcr.io/freix-st/secured-jwt-sb:latest
-        secrets:
-            - jwt_secret_key
         container_name: secured-jwt-sb
         ports:
             - "8080:8080"
